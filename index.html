@@ -132,7 +132,8 @@
         }
 
         const data = await res.json();
-        renderResults(data, query);
+        renderResults(data.products || [], query);
+
       } catch (err) {
         console.error(err);
         resultsDiv.innerHTML = "<div class='empty'>Ошибка при поиске, попробуй позже</div>";
