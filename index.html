@@ -2,199 +2,216 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Поиск продуктов</title>
+  <title>Лог еды</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Немного базовых стилей, чтобы было не ужасно -->
   <style>
     body {
-      font-family: -apple-system, system-ui, sans-serif;
+      font-family: -apple-system, sans-serif;
       margin: 0;
       padding: 16px;
-      background: #f5f5f5;
+      background: #f7f7f7;
     }
-    h1 {
-      font-size: 20px;
-      margin-bottom: 12px;
-    }
-    .search-wrapper {
-      margin-bottom: 12px;
-    }
-    input[type="text"] {
+    h1 { font-size: 22px; margin-bottom: 16px; }
+
+    .section { margin-bottom: 22px; }
+
+    select, input[type="text"], input[type="number"] {
       width: 100%;
-      padding: 10px 12px;
+      padding: 10px;
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
+      margin-top: 8px;
       box-sizing: border-box;
-      outline: none;
     }
-    input[type="text"]:focus {
-      border-color: #0088cc;
-    }
-    .results {
-      margin-top: 12px;
-    }
+    .results { margin-top: 10px; }
     .product {
       background: #fff;
+      padding: 10px;
       border-radius: 8px;
-      padding: 8px 10px;
       margin-bottom: 6px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .added-item {
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border-left: 4px solid #007aff;
+    }
+
+    .button {
+      width: 100%;
+      background: #007aff;
+      padding: 14px;
+      margin-top: 20px;
+      border-radius: 10px;
+      text-align: center;
+      color: #fff;
+      font-size: 18px;
       cursor: pointer;
     }
-    .product-name {
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-    .product-kbju {
-      font-size: 12px;
-      color: #555;
-    }
-    .empty {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #777;
-    }
-    .selected {
-      margin-top: 16px;
-      padding: 10px;
-      background: #e0f4ff;
-      border-radius: 8px;
-      font-size: 14px;
+    .button:active {
+      opacity: 0.6;
     }
   </style>
 </head>
-<body>
-  <h1>Поиск продуктов</h1>
 
-  <div class="search-wrapper">
-    <input
-      id="searchInput"
-      type="text"
-      placeholder="Начни вводить название продукта..."
-      autocomplete="off"
-    >
+<body>
+  <h1>Добавить приём пищи</h1>
+
+  <!-- Выбор типа приёма -->
+  <div class="section">
+    <label>Тип приёма пищи</label>
+    <select id="mealType">
+      <option value="Breakfast">Завтрак</option>
+      <option value="Lunch">Обед</option>
+      <option value="Dinner">Ужин</option>
+      <option value="Snack">Перекус</option>
+    </select>
   </div>
 
-  <div id="results" class="results"></div>
-  <div id="selected" class="selected" style="display:none;"></div>
+  <!-- Поиск продуктов -->
+  <div class="section">
+    <label>Поиск продукта</label>
+    <input id="searchInput" type="text" placeholder="Начни ввод...">
+    <div id="results" class="results"></div>
+  </div>
 
-  <!-- Telegram WebApp SDK (чтобы внутри ТГ всё корректно работало) -->
+  <!-- Список выбранных продуктов -->
+  <div class="section">
+    <h3>Выбранные продукты</h3>
+    <div id="selectedList"></div>
+  </div>
+
+  <!-- Кнопка сохранить -->
+  <div class="button" id="saveButton">Сохранить приём</div>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <script>
-    // 👉 ЗДЕСЬ укажешь свой backend
-    const API_BASE = "https://shibakovk.app.n8n.cloud/webhook/product_list";
+<script>
+  const API_SEARCH = "https://shibakovk.app.n8n.cloud/webhook/product_list";
+  const API_LOG    = "https://shibakovk.app.n8n.cloud/webhook/food_log";
 
-    // Инициализация Telegram WebApp (если открыто в Телеге)
-    const tg = window.Telegram ? window.Telegram.WebApp : null;
-    if (tg) {
-      tg.ready();
-      // Можно менять цвет темы и т.д. позже
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) tg.ready();
+
+  const searchInput = document.getElementById("searchInput");
+  const resultsDiv = document.getElementById("results");
+  const selectedList = document.getElementById("selectedList");
+
+  let debounce = null;
+  let selectedItems = []; // {product, quantity}
+
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.trim();
+
+    if (debounce) clearTimeout(debounce);
+
+    if (!query) {
+      resultsDiv.innerHTML = "";
+      return;
     }
 
-    const searchInput = document.getElementById("searchInput");
-    const resultsDiv = document.getElementById("results");
-    const selectedDiv = document.getElementById("selected");
+    debounce = setTimeout(() => {
+      fetchProducts(query);
+    }, 200);
+  });
 
-    let debounceTimer = null;
+  async function fetchProducts(query) {
+    try {
+      const res = await fetch(API_SEARCH + "?query=" + encodeURIComponent(query));
+      const data = await res.json();
 
-    // обработка ввода
-    searchInput.addEventListener("input", () => {
-      const query = searchInput.value.trim();
+      const products = data.products || data[0]?.products || [];
+      renderSearchResults(products);
+    } catch (e) {
+      resultsDiv.innerHTML = "<div>Ошибка поиска</div>";
+    }
+  }
 
-      // очищаем предыдущий таймер
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-      }
+  function renderSearchResults(products) {
+    if (!products.length) {
+      resultsDiv.innerHTML = "<div>Нет совпадений</div>";
+      return;
+    }
 
-      // если строка пустая — очищаем список и выходим
-      if (query.length === 0) {
-        resultsDiv.innerHTML = "";
-        selectedDiv.style.display = "none";
-        return;
-      }
+    resultsDiv.innerHTML = products
+      .map(p => `
+        <div class="product" onclick="selectProduct('${p.product.replace(/'/g, "\\'")}')">
+          ${p.product}
+        </div>
+      `)
+      .join("");
+  }
 
-      // дебаунс: подождать 200 мс перед запросом
-      debounceTimer = setTimeout(() => {
-        searchProducts(query);
-      }, 200);
+  window.selectProduct = function(productName) {
+    const itemId = Date.now();
+
+    selectedItems.push({
+      id: itemId,
+      product: productName,
+      quantity: 0
     });
 
-    async function searchProducts(query) {
-      try {
-        const url = API_BASE + "?query=" + encodeURIComponent(query);
-        const res = await fetch(url);
+    renderSelectedList();
+    resultsDiv.innerHTML = "";
+    searchInput.value = "";
+  };
 
-        if (!res.ok) {
-          throw new Error("Ошибка ответа сервера: " + res.status);
-        }
+  function renderSelectedList() {
+    selectedList.innerHTML = selectedItems
+      .map(item => `
+        <div class="added-item">
+          <strong>${item.product}</strong><br>
+          <input type="number"
+            placeholder="Граммы..."
+            value="${item.quantity}"
+            oninput="updateQuantity(${item.id}, this.value)"
+          >
+        </div>
+      `)
+      .join("");
+  }
 
-        const data = await res.json();
-        renderResults(data.products || [], query);
+  window.updateQuantity = function(id, value) {
+    const item = selectedItems.find(i => i.id === id);
+    if (item) item.quantity = Number(value) || 0;
+  };
 
-      } catch (err) {
-        console.error(err);
-        resultsDiv.innerHTML = "<div class='empty'>Ошибка при поиске, попробуй позже</div>";
-      }
-    }
+  // Сохранение в БД
+  document.getElementById("saveButton").addEventListener("click", async () => {
+  const mealType = document.getElementById("mealType").value;
 
-    function renderResults(products, query) {
-      // если нет результатов
-      if (!products || products.length === 0) {
-        resultsDiv.innerHTML = "<div class='empty'>Ничего не найдено по запросу: " + escapeHtml(query) + "</div>";
-        return;
-      }
+  // Собираем log_info в нужном формате
+  const logInfoString = selectedItems
+    .map(i => JSON.stringify({ product: i.product, quantity: i.quantity }))
+    .join("\n");
 
-      // собираем HTML
-      const html = products.map(p => {
-        const kbju = [
-          p.kcal_100 != null ? `Ккал: ${p.kcal_100}` : null,
-          p.protein_100 != null ? `Б: ${p.protein_100}` : null,
-          p.fat_100 != null ? `Ж: ${p.fat_100}` : null,
-          p.carbs_100 != null ? `У: ${p.carbs_100}` : null,
-        ].filter(Boolean).join(" · ");
+  const payload = {
+    meal_type: mealType,
+    request_type: "ready_to_insert",
+    log_info: logInfoString
+  };
 
-        return `
-          <div class="product" data-product="${escapeHtml(p.product)}">
-            <div class="product-name">${escapeHtml(p.product)}</div>
-            <div class="product-kbju">${kbju}</div>
-          </div>
-        `;
-      }).join("");
+  try {
+    await fetch(API_LOG, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-      resultsDiv.innerHTML = html;
+    if (tg) tg.close();
+    else alert("Сохранено!");
+  } catch (e) {
+    alert("Ошибка при сохранении");
+  }
+});
 
-      // навешиваем клики
-      document.querySelectorAll(".product").forEach(el => {
-        el.addEventListener("click", () => {
-          const productName = el.getAttribute("data-product");
-          onProductClick(productName);
-        });
-      });
-    }
 
-    function onProductClick(productName) {
-      // пока просто показываем, что выбрано
-      selectedDiv.style.display = "block";
-      selectedDiv.textContent = "Вы выбрали: " + productName;
-
-      // 👉 позже тут можно:
-      // - отправить выбранный продукт в backend для логирования
-      // - закрыть WebApp (tg.close())
-      // - показать ввод граммовки и т.д.
-    }
-
-    // простая функция экранирования HTML, чтобы избежать XSS
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-  </script>
+</script>
 </body>
 </html>
