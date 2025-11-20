@@ -1,0 +1,332 @@
+:root {
+  --bg-main: #f2f2f7;
+  --bg-card: #ffffff;
+  --border-subtle: #e5e5ea;
+  --accent: #ff3b30; /* Apple Health vibe */
+  --accent-soft: rgba(255, 59, 48, 0.14);
+  --text-main: #111111;
+  --text-secondary: #8e8e93;
+  --text-muted: #b0b0b4;
+  --shadow-soft: 0 8px 20px rgba(0,0,0,0.06);
+  --radius-card: 18px;
+  --radius-pill: 999px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-main);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 96px; /* запас под кнопку снизу */
+  box-sizing: border-box;
+}
+
+/* === HEADER === */
+.header {
+  padding-top: 20px;
+  padding-bottom: 12px;
+}
+
+.header-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.header-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.header-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 320px;
+}
+
+/* === CARDS === */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  padding: 14px 14px 12px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.card-caption {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.card-counter {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* === FIELDS === */
+select,
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font-size: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: #f9f9fb;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+select:focus,
+input[type="text"]:focus,
+input[type="number"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255,59,48,0.15);
+  background: #ffffff;
+}
+
+.field-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.field {
+  margin-top: 4px;
+}
+
+/* === SEARCH FIELD === */
+.search-wrapper {
+  position: relative;
+}
+
+.search-wrapper input[type="text"] {
+  padding-left: 32px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* === SEARCH RESULTS === */
+.results {
+  margin-top: 6px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  max-height: 240px;
+  overflow-y: auto;
+  min-height: 20px;      /* важно для WebApp, чтобы блок рендерился */
+  position: relative;
+  z-index: 10;
+  visibility: hidden;    /* по умолчанию скрыто */
+}
+
+.results-empty {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.product {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+
+.product + .product {
+  border-top: 1px solid rgba(0,0,0,0.04);
+}
+
+.product:active {
+  background: rgba(0,0,0,0.04);
+  transform: scale(0.99);
+}
+
+.product-name {
+  flex: 1;
+  padding-right: 8px;
+}
+
+.product-add {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* === SELECTED PRODUCTS === */
+.selected-list-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 4px 2px 2px;
+}
+
+.selected-item {
+  background: #f9f9fb;
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.selected-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.selected-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.selected-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 130px;
+  justify-content: flex-end;
+}
+
+.gram-picker-trigger {
+  padding: 8px 12px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  min-width: 80px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.gram-picker-trigger-empty {
+  color: var(--text-muted);
+}
+
+.remove-pill {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: rgba(0,0,0,0.06);
+  color: #555;
+  cursor: pointer;
+}
+
+.remove-pill:active {
+  background: rgba(0,0,0,0.09);
+}
+
+.small-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* === BOTTOM SAVE BUTTON === */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0));
+  background: linear-gradient(to top, rgba(242,242,247,0.98), rgba(242,242,247,0.85), transparent);
+  box-sizing: border-box;
+  backdrop-filter: blur(18px);
+}
+
+.button {
+  width: 100%;
+  background: var(--accent);
+  padding: 14px;
+  border-radius: 14px;
+  text-align: center;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 8px 16px rgba(255,59,48,0.35);
+  transition: transform 0.06s ease, box-shadow 0.1s ease, opacity 0.15s ease;
+}
+
+.button:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 10px rgba(255,59,48,0.25);
+  opacity: 0.9;
+}
+
+/* === DARK THEME === */
+body.dark {
+  --bg-main: #000000;
+  --bg-card: #1c1c1e;
+  --border-subtle: #3a3a3c;
+  --text-main: #f5f5f7;
+  --text-secondary: #8e8e93;
+  --text-muted: #6b6b70;
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.7);
+}
+
+body.dark .results {
+  background: #1c1c1e;
+  border-color: #3a3a3c;
+}
+
+body.dark .selected-item {
+  background: #2c2c2e;
+  border-color: #3a3a3c;
+}
+
+body.dark .bottom-bar {
+  background: linear-gradient(to top, rgba(0,0,0,0.98), rgba(0,0,0,0.85), transparent);
+}
