@@ -1,12 +1,19 @@
 FROM nginx:alpine
 
-# Railway передаёт номер порта в переменной PORT
-ENV PORT 8080
+ENV PORT=8080
 
-# Меняем конфигурацию nginx, чтобы он слушал именно этот порт
-RUN sed -i "s/listen       80;/listen       ${PORT};/" /etc/nginx/conf.d/default.conf
+# Удаляем дефолтный конфиг
+RUN rm /etc/nginx/conf.d/default.conf
 
-# Кладем статические файлы
+# Создаём новый конфиг, который слушает нужный порт
+RUN echo "server { \
+    listen ${PORT}; \
+    server_name _; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { try_files \$uri \$uri/ =404; } \
+}" > /etc/nginx/conf.d/default.conf
+
 COPY . /usr/share/nginx/html
 
 EXPOSE 8080
