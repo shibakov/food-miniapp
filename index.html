@@ -6,213 +6,558 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    body {
-      font-family: -apple-system, sans-serif;
-      margin: 0;
-      padding: 16px;
-      background: #f7f7f7;
+    :root {
+      --bg-main: #f2f2f7;
+      --bg-card: #ffffff;
+      --border-subtle: #e5e5ea;
+      --accent: #ff3b30; /* Apple Health vibe, можно заменить на #007aff */
+      --accent-soft: rgba(255, 59, 48, 0.14);
+      --text-main: #111111;
+      --text-secondary: #8e8e93;
+      --text-muted: #b0b0b4;
+      --shadow-soft: 0 8px 20px rgba(0,0,0,0.06);
+      --radius-card: 18px;
+      --radius-pill: 999px;
     }
-    h1 { font-size: 22px; margin-bottom: 16px; }
 
-    .section { margin-bottom: 22px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-main);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
 
-    select, input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-top: 8px;
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 16px 96px; /* запас под кнопку снизу */
       box-sizing: border-box;
     }
-    .results { margin-top: 10px; }
-    .product {
-      background: #fff;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 6px;
-      cursor: pointer;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+
+    /* === HEADER === */
+    .header {
+      padding-top: 20px;
+      padding-bottom: 12px;
     }
 
-    .added-item {
-      background: #fff;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      border-left: 4px solid #007aff;
+    .header-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .header-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .header-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 320px;
+    }
+
+    /* === CARDS === */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      padding: 14px 14px 12px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .card-caption {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .card-counter {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* === FIELDS === */
+    select,
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      font-size: 15px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: #f9f9fb;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    select:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(255,59,48,0.15);
+      background: #ffffff;
+    }
+
+    .field-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    /* === SEARCH FIELD === */
+    .search-wrapper {
+      position: relative;
+    }
+
+    .search-wrapper input[type="text"] {
+      padding-left: 32px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* === SEARCH RESULTS === */
+    .results {
+      margin-top: 6px;
+      border-radius: 12px;
+      background: #f9f9fb;
+      border: 1px solid var(--border-subtle);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .results-empty {
+      padding: 8px 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .product {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.05s ease;
+    }
+
+    .product + .product {
+      border-top: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .product:active {
+      background: rgba(0,0,0,0.04);
+      transform: scale(0.99);
+    }
+
+    .product-name {
+      flex: 1;
+      padding-right: 8px;
+    }
+
+    .product-add {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* === SELECTED PRODUCTS === */
+    .selected-list-empty {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 4px 2px 2px;
+    }
+
+    .selected-item {
+      background: #f9f9fb;
+      border-radius: 12px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .selected-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .selected-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .selected-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 130px;
+      justify-content: flex-end;
+    }
+
+    .selected-controls input[type="number"] {
+      width: 90px;
+      padding: 6px 8px;
+      font-size: 14px;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .remove-pill {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: rgba(0,0,0,0.06);
+      color: #555;
+      cursor: pointer;
+    }
+
+    .remove-pill:active {
+      background: rgba(0,0,0,0.09);
+    }
+
+    .small-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* === BOTTOM SAVE BUTTON === */
+    .bottom-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0));
+      background: linear-gradient(to top, rgba(242,242,247,0.98), rgba(242,242,247,0.85), transparent);
+      box-sizing: border-box;
+      backdrop-filter: blur(18px);
     }
 
     .button {
       width: 100%;
-      background: #007aff;
+      background: var(--accent);
       padding: 14px;
-      margin-top: 20px;
-      border-radius: 10px;
+      border-radius: 14px;
       text-align: center;
       color: #fff;
-      font-size: 18px;
+      font-size: 17px;
+      font-weight: 600;
       cursor: pointer;
+      border: none;
+      box-shadow: 0 8px 16px rgba(255,59,48,0.35);
+      transition: transform 0.06s ease, box-shadow 0.1s ease, opacity 0.15s ease;
     }
+
     .button:active {
-      opacity: 0.6;
+      transform: scale(0.98);
+      box-shadow: 0 4px 10px rgba(255,59,48,0.25);
+      opacity: 0.9;
+    }
+
+    /* === DARK THEME (через Telegram colorScheme) === */
+    body.dark {
+      --bg-main: #000000;
+      --bg-card: #1c1c1e;
+      --border-subtle: #3a3a3c;
+      --text-main: #f5f5f7;
+      --text-secondary: #8e8e93;
+      --text-muted: #6b6b70;
+      --shadow-soft: 0 10px 30px rgba(0,0,0,0.7);
     }
   </style>
 </head>
 
 <body>
-  <h1>Добавить приём пищи</h1>
+  <div class="page">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-label">питание</div>
+      <div class="header-title">Добавить приём пищи</div>
+      <div class="header-subtitle">
+        Выбери тип приёма и продукты. Граммовку можно скорректировать перед сохранением.
+      </div>
+    </header>
 
-  <!-- Выбор типа приёма -->
-  <div class="section">
-    <label>Тип приёма пищи</label>
-    <select id="mealType">
-      <option value="Breakfast">Завтрак</option>
-      <option value="Lunch">Обед</option>
-      <option value="Dinner">Ужин</option>
-      <option value="Snack">Перекус</option>
-    </select>
-  </div>
+    <!-- Тип приёма -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Тип приёма пищи</div>
+          <div class="card-caption">Используется для логов и отчётов</div>
+        </div>
+      </div>
 
-  <!-- Поиск продуктов -->
-  <div class="section">
-    <label>Поиск продукта</label>
-    <input id="searchInput" type="text" placeholder="Начни ввод...">
-    <div id="results" class="results"></div>
-  </div>
+      <div class="field">
+        <div class="field-label">Выбери один вариант</div>
+        <select id="mealType">
+          <option value="Breakfast">Завтрак</option>
+          <option value="Lunch">Обед</option>
+          <option value="Dinner">Ужин</option>
+          <option value="Snack">Перекус</option>
+        </select>
+      </div>
+    </section>
 
-  <!-- Список выбранных продуктов -->
-  <div class="section">
-    <h3>Выбранные продукты</h3>
-    <div id="selectedList"></div>
+    <!-- Поиск продуктов -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Поиск продукта</div>
+          <div class="card-caption">Начни вводить название из твоего словаря</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Найди продукт и нажми, чтобы добавить</div>
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input id="searchInput" type="text" placeholder="Например, «куриная грудка»">
+        </div>
+      </div>
+
+      <div id="results" class="results" style="display:none;"></div>
+    </section>
+
+    <!-- Выбранные продукты -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Выбранные продукты</div>
+          <div class="card-caption">Укажи граммовку перед сохранением</div>
+        </div>
+        <div id="selectedCounter" class="card-counter">0 продуктов</div>
+      </div>
+
+      <div id="selectedList">
+        <div class="selected-list-empty">
+          Пока ничего не выбрано. Найди продукт выше и добавь его в этот приём.
+        </div>
+      </div>
+    </section>
   </div>
 
   <!-- Кнопка сохранить -->
-  <div class="button" id="saveButton">Сохранить приём</div>
+  <div class="bottom-bar">
+    <button class="button" id="saveButton">Сохранить приём</button>
+  </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<script>
-  const API_SEARCH = "https://shibakovk.app.n8n.cloud/webhook/product_list";
-  const API_LOG    = "https://shibakovk.app.n8n.cloud/webhook/food_log";
+  <script>
+    const API_SEARCH = "https://shibakovk.app.n8n.cloud/webhook/product_list";
+    const API_LOG    = "https://shibakovk.app.n8n.cloud/webhook/food_log";
 
-  const tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) tg.ready();
+    const tg = window.Telegram && window.Telegram.WebApp;
 
-  const searchInput = document.getElementById("searchInput");
-  const resultsDiv = document.getElementById("results");
-  const selectedList = document.getElementById("selectedList");
+    if (tg) {
+      tg.ready();
+      if (tg.colorScheme === "dark") {
+        document.body.classList.add("dark");
+      }
+    }
 
-  let debounce = null;
-  let selectedItems = []; // {product, quantity}
+    const searchInput   = document.getElementById("searchInput");
+    const resultsDiv    = document.getElementById("results");
+    const selectedList  = document.getElementById("selectedList");
+    const counterSpan   = document.getElementById("selectedCounter");
 
-  searchInput.addEventListener("input", () => {
-    const query = searchInput.value.trim();
+    let debounce = null;
+    let selectedItems = []; // {id, product, quantity}
 
-    if (debounce) clearTimeout(debounce);
+    // === Поиск продуктов ===
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.trim();
 
-    if (!query) {
+      if (debounce) clearTimeout(debounce);
+
+      if (!query) {
+        resultsDiv.style.display = "none";
+        resultsDiv.innerHTML = "";
+        return;
+      }
+
+      debounce = setTimeout(() => {
+        fetchProducts(query);
+      }, 200);
+    });
+
+    async function fetchProducts(query) {
+      try {
+        const res = await fetch(API_SEARCH + "?query=" + encodeURIComponent(query));
+        const data = await res.json();
+
+        const products = data.products || (data[0] && data[0].products) || [];
+        renderSearchResults(products);
+      } catch (e) {
+        resultsDiv.style.display = "block";
+        resultsDiv.innerHTML = '<div class="results-empty">Ошибка поиска, попробуй ещё раз</div>';
+      }
+    }
+
+    function renderSearchResults(products) {
+      if (!products.length) {
+        resultsDiv.style.display = "block";
+        resultsDiv.innerHTML = '<div class="results-empty">Нет совпадений</div>';
+        return;
+      }
+
+      resultsDiv.style.display = "block";
+      resultsDiv.innerHTML = products
+        .map(p => `
+          <div class="product" onclick="selectProduct('${p.product.replace(/'/g, "\\'")}')">
+            <div class="product-name">${p.product}</div>
+            <div class="product-add">Добавить</div>
+          </div>
+        `)
+        .join("");
+    }
+
+    // === Добавление продукта ===
+    window.selectProduct = function(productName) {
+      const itemId = Date.now() + Math.random();
+
+      selectedItems.push({
+        id: itemId,
+        product: productName,
+        quantity: 0
+      });
+
+      renderSelectedList();
+      resultsDiv.style.display = "none";
       resultsDiv.innerHTML = "";
-      return;
+      searchInput.value = "";
+    };
+
+    function renderSelectedList() {
+      if (!selectedItems.length) {
+        selectedList.innerHTML = `
+          <div class="selected-list-empty">
+            Пока ничего не выбрано. Найди продукт выше и добавь его в этот приём.
+          </div>
+        `;
+        updateCounter();
+        return;
+      }
+
+      selectedList.innerHTML = selectedItems
+        .map(item => `
+          <div class="selected-item">
+            <div class="selected-row">
+              <div class="selected-name">${item.product}</div>
+              <div class="selected-controls">
+                <input type="number"
+                  placeholder="граммы"
+                  value="${item.quantity || ''}"
+                  oninput="updateQuantity(${item.id}, this.value)"
+                >
+                <button class="remove-pill" onclick="removeItem(${item.id})">Убрать</button>
+              </div>
+            </div>
+            <div class="small-hint">Укажи вес продукта в граммах</div>
+          </div>
+        `)
+        .join("");
+
+      updateCounter();
     }
 
-    debounce = setTimeout(() => {
-      fetchProducts(query);
-    }, 200);
-  });
+    window.updateQuantity = function(id, value) {
+      const item = selectedItems.find(i => i.id === id);
+      if (item) item.quantity = Number(value) || 0;
+    };
 
-  async function fetchProducts(query) {
-    try {
-      const res = await fetch(API_SEARCH + "?query=" + encodeURIComponent(query));
-      const data = await res.json();
+    window.removeItem = function(id) {
+      selectedItems = selectedItems.filter(i => i.id !== id);
+      renderSelectedList();
+    };
 
-      const products = data.products || data[0]?.products || [];
-      renderSearchResults(products);
-    } catch (e) {
-      resultsDiv.innerHTML = "<div>Ошибка поиска</div>";
+    function updateCounter() {
+      const count = selectedItems.length;
+      if (!counterSpan) return;
+
+      if (count === 0) {
+        counterSpan.textContent = "0 продуктов";
+      } else if (count === 1) {
+        counterSpan.textContent = "1 продукт";
+      } else if (count >= 2 && count <= 4) {
+        counterSpan.textContent = count + " продукта";
+      } else {
+        counterSpan.textContent = count + " продуктов";
+      }
     }
-  }
 
-  function renderSearchResults(products) {
-    if (!products.length) {
-      resultsDiv.innerHTML = "<div>Нет совпадений</div>";
-      return;
-    }
+    // === Сохранение в БД ===
+    document.getElementById("saveButton").addEventListener("click", async () => {
+      const mealType = document.getElementById("mealType").value;
 
-    resultsDiv.innerHTML = products
-      .map(p => `
-        <div class="product" onclick="selectProduct('${p.product.replace(/'/g, "\\'")}')">
-          ${p.product}
-        </div>
-      `)
-      .join("");
-  }
+      const logInfoString = selectedItems
+        .map(i => JSON.stringify({ product: i.product, quantity: i.quantity }))
+        .join("\n");
 
-  window.selectProduct = function(productName) {
-    const itemId = Date.now();
+      const payload = {
+        meal_type: mealType,
+        request_type: "ready to insert",
+        log_info: logInfoString
+      };
 
-    selectedItems.push({
-      id: itemId,
-      product: productName,
-      quantity: 0
+      try {
+        await fetch(API_LOG, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (tg) tg.close();
+        else alert("Сохранено!");
+      } catch (e) {
+        alert("Ошибка при сохранении");
+      }
     });
-
-    renderSelectedList();
-    resultsDiv.innerHTML = "";
-    searchInput.value = "";
-  };
-
-  function renderSelectedList() {
-    selectedList.innerHTML = selectedItems
-      .map(item => `
-        <div class="added-item">
-          <strong>${item.product}</strong><br>
-          <input type="number"
-            placeholder="Граммы..."
-            value="${item.quantity}"
-            oninput="updateQuantity(${item.id}, this.value)"
-          >
-        </div>
-      `)
-      .join("");
-  }
-
-  window.updateQuantity = function(id, value) {
-    const item = selectedItems.find(i => i.id === id);
-    if (item) item.quantity = Number(value) || 0;
-  };
-
-  // Сохранение в БД
-  document.getElementById("saveButton").addEventListener("click", async () => {
-  const mealType = document.getElementById("mealType").value;
-
-  // Собираем log_info в нужном формате
-  const logInfoString = selectedItems
-    .map(i => JSON.stringify({ product: i.product, quantity: i.quantity }))
-    .join("\n");
-
-  const payload = {
-    meal_type: mealType,
-    request_type: "ready_to_insert",
-    log_info: logInfoString
-  };
-
-    
-  try {
-    await fetch(API_LOG, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (tg) tg.close();
-    else alert("Сохранено!");
-  } catch (e) {
-    alert("Ошибка при сохранении");
-  }
-});
-
-
-</script>
+  </script>
 </body>
 </html>
