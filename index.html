@@ -105,68 +105,20 @@
 const API_URL = "https://calroiesinfoms-production.up.railway.app";
 const N8N_WEBHOOK = "https://shibakovk.app.n8n.cloud/webhook/food_log";
 
-// 🔥 Бесплатный перевод (LibreTranslate)
-const TRANSLATE_URL = "https://libretranslate.com/translate";
-
 let selectedProduct = null;
-
-// ---------- язык ----------
-function isRussian(text) {
-  return /[а-яА-ЯёЁ]/.test(text);
-}
-
-// ---------- перевод ----------
-async function translate(text, targetLang) {
-  try {
-    const res = await fetch(TRANSLATE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        q: text,
-        source: "auto",
-        target: targetLang,
-        format: "text"
-      })
-    });
-
-    const data = await res.json();
-    if (data?.translatedText) return data.translatedText;
-
-    return text; // fallback
-  } catch {
-    return text;
-  }
-}
-
 
 // ---------- поиск ----------
 document.getElementById("search").addEventListener("input", async (e) => {
-  let q = e.target.value.trim();
+  const q = e.target.value.trim();
   if (q.length < 2) {
     document.getElementById("results").innerHTML = "";
     return;
   }
 
-  let queryForApi = q;
-
-  // 🔥 Если русский → переводим на английский
-  if (isRussian(q)) {
-    queryForApi = await translate(q, "en");
-  }
-
-  const res = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(queryForApi)}`);
+  const res = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(q)}`);
   const data = await res.json();
 
-  let products = data.results;
-
-  // 🔥 Переводим product обратно на русский, если ввод был русский
-  if (isRussian(q)) {
-    for (let p of products) {
-      p.product = await translate(p.product, "ru");
-    }
-  }
-
-  const list = products.map(p => `
+  const list = data.results.map(p => `
     <div class="product" onclick='selectProduct(${JSON.stringify(p)})'>
       <strong>${p.product}</strong>
       <div class="source">${p.source.toUpperCase()}</div>
