@@ -1,190 +1,178 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Лог еды</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>Food Logger</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="stylesheet" href="styles.css">
-</head>
-
-<body>
-  <div class="page">
-    <!-- HEADER -->
-    <header class="header">
-      <div class="header-label">питание</div>
-      <div class="header-title">Добавить приём пищи</div>
-      <div class="header-subtitle">
-        Выбери тип приёма и продукты. Граммовку можно скорректировать перед сохранением.
-      </div>
-    </header>
-
-    <!-- Тип приёма -->
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Тип приёма пищи</div>
-          <div class="card-caption">Используется для логов и отчётов</div>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="field-label">Выбери один вариант</div>
-        <select id="mealType">
-          <option value="Breakfast">Завтрак</option>
-          <option value="Lunch">Обед</option>
-          <option value="Dinner">Ужин</option>
-          <option value="Snack">Перекус</option>
-        </select>
-      </div>
-    </section>
-
-    <!-- Поиск продуктов -->
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Поиск продукта</div>
-          <div class="card-caption">Начни вводить название из твоего словаря</div>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="field-label">Найди продукт и нажми, чтобы добавить</div>
-        <div class="search-wrapper">
-          <span class="search-icon">🔍</span>
-          <input id="searchInput" type="text" placeholder="Например, «куриная грудка»">
-        </div>
-      </div>
-
-      <div id="results" class="results"></div>
-    </section>
-
-    <!-- Выбранные продукты -->
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Выбранные продукты</div>
-          <div class="card-caption">Укажи граммовку перед сохранением</div>
-        </div>
-        <div id="selectedCounter" class="card-counter">0 продуктов</div>
-      </div>
-
-      <div id="selectedList">
-        <div class="selected-list-empty">
-          Пока ничего не выбрано. Найди продукт выше и добавь его в этот приём.
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <!-- Кнопка сохранить -->
-  <div class="bottom-bar">
-    <button class="button" id="saveButton">Сохранить приём</button>
-  </div>
-
-  <!-- Успешное сохранение -->
-  <div id="successScreen" style="
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.35);
-    backdrop-filter: blur(12px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-  ">
-    <div style="
-      background: #fff;
-      border-radius: 22px;
-      padding: 22px;
-      width: 86%;
-      max-width: 380px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      text-align: center;
-      font-family: -apple-system;
-    ">
-      <div style="font-size: 44px; margin-bottom: 10px;">✅</div>
-      <div style="font-size: 20px; font-weight: 600; margin-bottom: 14px;">
-        Приём пищи сохранён
-      </div>
-
-      <div id="successTable" style="
-        font-size: 14px;
-        line-height: 1.45;
-        color: #555;
-        text-align: left;
-        background: #f9f9fb;
-        padding: 12px;
-        border-radius: 12px;
-        border: 1px solid #eee;
-        margin-bottom: 20px;
-        max-height: 220px;
-        overflow-y: auto;
-      "></div>
-
-      <button onclick="closeSuccess()" style="
-        width: 100%;
-        padding: 12px;
-        font-size: 16px;
-        background: #007aff;
-        color: #fff;
-        border-radius: 12px;
-        border: none;
-        cursor: pointer;
-      ">Закрыть</button>
-    </div>
-  </div>
-
-  <!-- Picker граммовки -->
-  <div id="pickerOverlay" style="
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.35);
-    backdrop-filter: blur(12px);
-    display: none;
-    align-items: flex-end;
-    justify-content: center;
-    z-index: 99999;
-  ">
-    <div style="
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, Roboto, Arial;
+      padding: 20px;
+      background: #fafafa;
+    }
+    input {
       width: 100%;
-      background: #fff;
-      border-radius: 20px 20px 0 0;
-      padding-top: 10px;
-      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.22);
-    ">
-      <div style="text-align: center; font-size: 16px; font-weight: 600; padding-bottom: 6px;">
-        Укажи граммовку
-      </div>
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+      margin-bottom: 20px;
+      outline: none;
+    }
+    .product {
+      background: white;
+      padding: 15px;
+      border-radius: 14px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+    .source {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+    .macros {
+      font-size: 14px;
+      margin-top: 6px;
+    }
 
-      <div id="pickerWheel" style="
-        height: 180px;
-        overflow-y: auto;
-        scroll-snap-type: y mandatory;
-        -webkit-overflow-scrolling: touch;
-        border-top: 1px solid #ddd;
-        border-bottom: 1px solid #ddd;
-        position: relative;
-      ">
-        <!-- значения добавятся из JS -->
-      </div>
+    #gram-picker {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
 
-      <button onclick="closePicker()" style="
-        width: 90%;
-        margin: 10px auto 0;
-        display: block;
-        padding: 12px;
-        background: #007aff;
-        color: #fff;
-        font-size: 16px;
-        border-radius: 12px;
-        border: none;
-      ">Готово</button>
-    </div>
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: #34aaff;
+      color: white;
+      border-radius: 12px;
+      font-size: 18px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .confirm {
+      display: none;
+      background: white;
+      padding: 14px;
+      border-radius: 14px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+      margin-top: 14px;
+      font-size: 15px;
+    }
+  </style>
+
+</head>
+<body>
+
+  <h2>Добавить продукт</h2>
+
+  <input id="search" placeholder="Йогурт, гречка, яблоко…" />
+
+  <div id="results"></div>
+
+  <div id="selected-block" style="display:none;">
+    <h3 id="selected-title"></h3>
+
+    <label>Граммовка:</label>
+
+    <select id="gram-picker">
+      <option>50</option>
+      <option>70</option>
+      <option>100</option>
+      <option>120</option>
+      <option>150</option>
+      <option>180</option>
+      <option>200</option>
+      <option>250</option>
+      <option>300</option>
+      <option>350</option>
+    </select>
+
+    <button id="add-btn">Добавить</button>
+
+    <div class="confirm" id="confirm">Добавлено!</div>
   </div>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="script.js"></script>
+
+<script>
+const API_URL = "https://calroiesinfoms-production.up.railway.app";
+const N8N_WEBHOOK = "ТВОЙ_WEBHOOK_СЮДА";  // обнови
+
+let selectedProduct = null;
+
+// ---------- поиск ----------
+document.getElementById("search").addEventListener("input", async (e) => {
+  const q = e.target.value.trim();
+  if (q.length < 2) {
+    document.getElementById("results").innerHTML = "";
+    return;
+  }
+
+  const res = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(q)}`);
+  const data = await res.json();
+
+  const list = data.results.map(p => `
+    <div class="product" onclick='selectProduct(${JSON.stringify(p)})'>
+      <strong>${p.product}</strong>
+      <div class="source">${p.source.toUpperCase()}</div>
+      <div class="macros">${p.kcal_100} ккал — Б:${p.protein_100} Ж:${p.fat_100} У:${p.carbs_100}</div>
+    </div>
+  `).join("");
+
+  document.getElementById("results").innerHTML = list;
+});
+
+
+// ---------- выбор продукта ----------
+function selectProduct(p) {
+  selectedProduct = p;
+
+  document.getElementById("selected-block").style.display = "block";
+  document.getElementById("selected-title").innerText = p.product;
+  document.getElementById("confirm").style.display = "none";
+}
+
+
+// ---------- отправка данных ----------
+document.getElementById("add-btn").addEventListener("click", async () => {
+  const grams = document.getElementById("gram-picker").value;
+
+  const payload = {
+    product: selectedProduct.product,
+    quantity: Number(grams),
+    source: selectedProduct.source,
+    kcal_100: selectedProduct.kcal_100,
+    protein_100: selectedProduct.protein_100,
+    fat_100: selectedProduct.fat_100,
+    carbs_100: selectedProduct.carbs_100
+  };
+
+  // --- отправка в n8n ---
+  await fetch(N8N_WEBHOOK, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(payload)
+  });
+
+  // --- автодобавление в базу если это НЕ local ---
+  if (selectedProduct.source !== "local") {
+    await fetch(`${API_URL}/api/auto-add`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(selectedProduct)
+    });
+  }
+
+  document.getElementById("confirm").style.display = "block";
+});
+</script>
+
 </body>
 </html>
